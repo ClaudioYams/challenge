@@ -1,0 +1,62 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{shared/header :: head}"></head>
+<body>
+
+<div th:replace="~{shared/header :: header}"></div>
+
+<div class="container">
+    <div th:each="categoria : ${categorias}">
+        <h1 th:text="${categoria.getNome()}"></h1>
+        <div class="row">
+            <div class="col-md-4" th:each="produto : ${categoria.getProdutos()}">
+                <div class="product-card">
+                    <img th:src="${produto.getImagem()}" class="product-image" alt="Imagem do produto">
+                    <div class="product-info">
+                        <h2 class="product-title" th:text="${produto.getNome()}"></h2>
+                        <p class="product-price" th:text="'R$' + ${#numbers.formatDecimal(produto.getPreco(), 1, 'COMMA', 2, 'POINT')}"></p>
+                        <form th:action="@{/api/carrinho}" method="POST">
+                            <button class="btn product-button" type="submit">
+                                <i class="bi bi-cart"></i> Adicionar ao carrinho
+                            </button>
+                            <input type="hidden" name="produtoId" th:value="${produto.getId()}">
+                            <input type="hidden" name="userId" th:value="${userId}">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $(".product-button").click(function(event){
+            event.preventDefault();
+            var form = $(this).closest("form");
+            var produtoId = form.find("input[name='produtoId']").val();
+            var userId = form.find("input[name='userId']").val();
+            var data = {
+                "usuario": {
+                    "id": userId
+                },
+                "produtos": [
+                    {
+                        "id": produtoId
+                    }
+                ]
+            };
+            $.ajax({
+                url: '/api/carrinho',
+                type: 'post',
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function (data) {
+                    console.log(data);
+                },
+                data: JSON.stringify(data)
+            });
+        });
+    });
+</script>
+</html>
